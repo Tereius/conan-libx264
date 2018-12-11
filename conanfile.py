@@ -16,7 +16,7 @@ class LibX264Conan(ConanFile):
     exports_sources = ["CMakeLists.txt", "LICENSE"]
     settings = "os", "arch", "compiler", "build_type"
     options = {"shared": [True, False], "fPIC": [True, False], "bit_depth": [8, 10]}
-    default_options = {'shared': False, 'fPIC': True, 'bit_depth': '8'}
+    default_options = "shared=False", "fPIC=True", "bit_depth=8"
     build_requires = "nasm_installer/2.13.02@bincrafters/stable"
     _source_subfolder = "sources"
 
