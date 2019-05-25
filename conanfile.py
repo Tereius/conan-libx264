@@ -16,7 +16,7 @@ class LibX264Conan(ConanFile):
     exports_sources = ["CMakeLists.txt", "LICENSE"]
     settings = "os", "arch", "compiler", "build_type"
     options = {"shared": [True, False], "fPIC": [True, False], "bit_depth": [8, 10]}
-    default_options = "shared=False", "fPIC=True", "bit_depth=8"
+    default_options = "shared=True", "fPIC=True", "bit_depth=8"
     build_requires = "nasm_installer/2.13.02@bincrafters/stable"
     _source_subfolder = "sources"
 
@@ -29,8 +29,15 @@ class LibX264Conan(ConanFile):
         return self.settings.compiler == 'Visual Studio'
 
     def build_requirements(self):
-        if self._is_mingw_windows or self._is_msvc:
-            self.build_requires("cygwin_installer/2.9.0@bincrafters/stable")
+        if self.settings.os == 'Android':
+            self.options["android-ndk"].makeStandalone = True
+            if tools.os_info.is_windows == 'Windows':
+                self.build_requires("msys2_installer/latest@tereius/stable")
+            self.build_requires("android-ndk/r17b@tereius/stable")
+        if self.settings.os == 'Windows':
+            self.build_requires("msys2_installer/latest@tereius/stable")
+            if self._is_mingw_windows:
+                self.options["msys2_installer"].provideMinGW = True
 
     def config_options(self):
         if self.settings.os == 'Windows':
@@ -45,6 +52,8 @@ class LibX264Conan(ConanFile):
         tools.get(source_url)
         extracted_dir = 'x264-snapshot-%s-2245' % self.version
         os.rename(extracted_dir, self._source_subfolder)
+        if self.settings.os == "Android":
+            tools.replace_in_file("sources/configure", 'echo "SONAME=libx264.so.$API" >> config.mak', 'echo "SONAME=libx264.so" >> config.mak')
 
     def _build_configure(self):
         with tools.chdir(self._source_subfolder):
@@ -58,6 +67,8 @@ class LibX264Conan(ConanFile):
             if self.settings.build_type == 'Debug':
                 args.append('--enable-debug')
             args.append('--bit-depth=%s' % str(self.options.bit_depth))
+            if self.settings.os == "Android":
+                args.append('--host=arm-linux')
 
             env_vars = dict()
             if self._is_msvc:
