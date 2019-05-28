@@ -13,7 +13,7 @@ class LibX264Conan(ConanFile):
     description = "x264 is a free software library and application for encoding video streams into the " \
                   "H.264/MPEG-4 AVC compression format"
     license = "http://git.videolan.org/?p=x264.git;a=blob;f=COPYING"
-    exports_sources = ["CMakeLists.txt", "LICENSE"]
+    exports_sources = ["CMakeLists.txt", "LICENSE", "strings.exe"]
     settings = "os", "arch", "compiler", "build_type"
     options = {"shared": [True, False], "fPIC": [True, False], "bit_depth": [8, 10]}
     default_options = "shared=True", "fPIC=True", "bit_depth=8"
@@ -31,13 +31,13 @@ class LibX264Conan(ConanFile):
     def build_requirements(self):
         if self.settings.os == 'Android':
             self.options["android-ndk"].makeStandalone = True
-            if tools.os_info.is_windows == 'Windows':
-                self.build_requires("msys2_installer/latest@tereius/stable")
+            if tools.os_info.is_windows:
+                self.build_requires("msys2/20161025@tereius/stable")
             self.build_requires("android-ndk/r17b@tereius/stable")
         if self.settings.os == 'Windows':
-            self.build_requires("msys2_installer/latest@tereius/stable")
+            self.build_requires("msys2/20161025@tereius/stable")
             if self._is_mingw_windows:
-                self.options["msys2_installer"].provideMinGW = True
+                self.options["msys2"].provideMinGW = True
 
     def config_options(self):
         if self.settings.os == 'Windows':
@@ -71,17 +71,19 @@ class LibX264Conan(ConanFile):
                 args.append('--host=arm-linux')
 
             env_vars = dict()
+            env_vars['PATH'] = [self.source_folder]
             if self._is_msvc:
-                env_vars['CC'] = 'cl'
+                env_vars['CC'] = self.source
             with tools.environment_append(env_vars):
-                env_build = AutoToolsBuildEnvironment(self, win_bash=self._is_mingw_windows or self._is_msvc)
+                env_build = AutoToolsBuildEnvironment(self, win_bash=tools.os_info.is_windows)
                 if self._is_msvc:
                     env_build.flags.append('-%s' % str(self.settings.compiler.runtime))
                     # cannot open program database ... if multiple CL.EXE write to the same .PDB file, please use /FS
                     env_build.flags.append('-FS')
                 env_build.configure(args=args, build=False, host=False)
                 env_build.make()
-                env_build.install()
+                if not (self.settings.os == "Android" and tools.os_info.is_windows):
+                    env_build.install()
 
     def build(self):
         if self._is_msvc:
@@ -92,6 +94,8 @@ class LibX264Conan(ConanFile):
 
     def package(self):
         self.copy(pattern="COPYING", src='sources', dst='licenses')
+        if self.settings.os == "Android" and tools.os_info.is_windows:
+            self.copy("*.so", dst="lib", src='sources', keep_path=False)
 
     def package_info(self):
         if self._is_msvc:
