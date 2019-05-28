@@ -97,6 +97,8 @@ class LibX264Conan(ConanFile):
         if self.settings.os == "Android" and tools.os_info.is_windows:
             self.copy("*.so", dst="lib", src='sources', keep_path=False)
             self.copy("*.pc", dst="lib/pkgconfig", src='sources', keep_path=False)
+            self.copy("x264.h", dst="include", src='sources', keep_path=False)
+            self.copy("x264_config.h", dst="include", src='sources', keep_path=False)
 
     def package_info(self):
         if self._is_msvc:
