@@ -74,7 +74,7 @@ class LibX264Conan(ConanFile):
             env_vars = dict()
             env_vars['PATH'] = [self.source_folder]
             if self._is_msvc:
-                env_vars['CC'] = self.source
+                env_vars['CC'] = 'cl'
             with tools.environment_append(env_vars):
                 env_build = AutoToolsBuildEnvironment(self, win_bash=tools.os_info.is_windows)
                 if self._is_msvc:
