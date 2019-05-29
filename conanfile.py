@@ -30,14 +30,15 @@ class LibX264Conan(ConanFile):
 
     def build_requirements(self):
         if self.settings.os == 'Android':
-            self.options["android-ndk"].makeStandalone = True
+            self.build_requires_options["android-ndk"].makeStandalone = True
             if tools.os_info.is_windows:
                 self.build_requires("msys2/20161025@tereius/stable")
+                self.build_requires_options["msys2"].provideMinGW = False
             self.build_requires("android-ndk/r17b@tereius/stable")
         if self.settings.os == 'Windows':
             self.build_requires("msys2/20161025@tereius/stable")
             if self._is_mingw_windows:
-                self.options["msys2"].provideMinGW = True
+                self.build_requires_options["msys2"].provideMinGW = True
 
     def config_options(self):
         if self.settings.os == 'Windows':
