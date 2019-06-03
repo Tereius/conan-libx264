@@ -103,7 +103,7 @@ class LibX264Conan(ConanFile):
 
     def package_info(self):
         if self._is_msvc:
-            self.cpp_info.libs = ['libx264.dll.lib' if self.options.shared else 'libx264']
+            self.cpp_info.libs = ['libx264.dll' if self.options.shared else 'libx264']
         elif self._is_mingw_windows:
             self.cpp_info.libs = ['x264.dll' if self.options.shared else 'x264']
         else:
