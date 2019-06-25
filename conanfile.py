@@ -53,8 +53,6 @@ class LibX264Conan(ConanFile):
         tools.get(source_url)
         extracted_dir = 'x264-snapshot-%s-2245' % self.version
         os.rename(extracted_dir, self._source_subfolder)
-        if self.settings.os == "Android":
-            tools.replace_in_file("sources/configure", 'echo "SONAME=libx264.so.$API" >> config.mak', 'echo "SONAME=libx264.so" >> config.mak')
 
     def _build_configure(self):
         with tools.chdir(self._source_subfolder):
@@ -87,6 +85,8 @@ class LibX264Conan(ConanFile):
                     env_build.install()
 
     def build(self):
+        if self.settings.os == "Android":
+            tools.replace_in_file("sources/configure", 'echo "SONAME=libx264.so.$API" >> config.mak', 'echo "SONAME=libx264.so" >> config.mak')
         if self._is_msvc:
             with tools.vcvars(self.settings):
                 self._build_configure()
