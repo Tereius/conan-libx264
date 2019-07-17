@@ -87,6 +87,9 @@ class LibX264Conan(ConanFile):
     def build(self):
         if self.settings.os == "Android":
             tools.replace_in_file("sources/configure", 'echo "SONAME=libx264.so.$API" >> config.mak', 'echo "SONAME=libx264.so" >> config.mak')
+        elif self.settings.os == "Windows":
+            tools.replace_in_file("sources/configure", "echo 'IMPLIBNAME=libx264.dll.lib' >> config.mak", "echo 'IMPLIBNAME=libx264.lib' >> config.mak")
+            tools.replace_in_file("sources/configure", "echo 'IMPLIBNAME=libx264.dll.a' >> config.mak", "echo 'IMPLIBNAME=libx264.a' >> config.mak")
         if self._is_msvc:
             with tools.vcvars(self.settings):
                 self._build_configure()
@@ -103,9 +106,7 @@ class LibX264Conan(ConanFile):
 
     def package_info(self):
         if self._is_msvc:
-            self.cpp_info.libs = ['libx264.dll' if self.options.shared else 'libx264']
-        elif self._is_mingw_windows:
-            self.cpp_info.libs = ['x264.dll' if self.options.shared else 'x264']
+            self.cpp_info.libs = ['libx264']
         else:
             self.cpp_info.libs = ['x264']
         if self.settings.os == "Linux":
