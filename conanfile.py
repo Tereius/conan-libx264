@@ -67,7 +67,10 @@ class LibX264Conan(ConanFile):
                 args.append('--enable-debug')
             args.append('--bit-depth=%s' % str(self.options.bit_depth))
             if self.settings.os == "Android":
-                args.append('--host=arm-linux')
+                if str(self.settings.arch).startswith('armv7'):
+                    args.append('--host=arm-linux')
+                elif str(self.settings.arch).startswith('armv8'):
+                    args.append('--host=aarch64-linux')
 
             env_vars = dict()
             env_vars['PATH'] = [self.source_folder]
